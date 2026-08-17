@@ -155,10 +155,10 @@ Skill 先取得系统盘容量和根一级目录基线，再根据本机真正�
 python -m unittest discover -s tests -p "test_*.py"
 ```
 
-检查 Skill 包结构。请把 `<meta-skill目录>` 换成 qiaomu-meta-skill 的实际安装位置。
+检查 Skill 包结构。请把 `<校验器目录>` 换成提供 `validate_skill.py` 的实际目录。
 
 ```powershell
-python <meta-skill目录>\scripts\validate_skill.py .
+python <校验器目录>\scripts\validate_skill.py .
 ```
 
 检查示例报告的安全和完整性门禁。
