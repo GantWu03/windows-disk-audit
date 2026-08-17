@@ -1,148 +1,177 @@
-# windows-disk-audit
+# Windows 磁盘空间排查
 
-> 把“C 盘快满了”变成一份有调查顺序、有证据、能解释处理影响的 Windows 系统盘空间审计报告。
+> 只读查清 Windows 系统盘空间去了哪里，并生成一份可以继续追问的目录报告。
 
-该 Skill 先做只读盘点，再按故障关联、空间收益和风险定向深查。它提供调查框架和目录教程，但不会把模型限制成逐字段填表，也不会把 `Cache`、`Temp`、旧日期或大文件直接当成可删证据。
+[![License](https://img.shields.io/github/license/GantWu03/windows-disk-audit?style=flat-square)](LICENSE)
+[![Last commit](https://img.shields.io/github/last-commit/GantWu03/windows-disk-audit?style=flat-square)](https://github.com/GantWu03/windows-disk-audit/commits/main)
 
-## 适用场景
+系统盘越来越小，扫描工具通常先给出哪些目录占用较大。这个 Skill 会继续解释里面是什么、由什么活动产生、处理后会影响什么，还会如实保留没有查明的地方。最终报告可以留着反复追问，无需在第一次检查时就决定删什么。
 
-- C 盘持续变小，不知道哪个目录在增长。
-- 想系统检查 Windows、应用、用户缓存、Docker、WSL 和虚拟磁盘。
-- 想知道一个文件如何产生、有什么用、处理后会怎样。
-- 想把多轮排查整理成可复盘的中文 Markdown。
+它默认只读，不会自动删除文件、卸载软件、停止服务或修改系统设置。
 
-不用于 RAM、云盘配额、非 Windows 系统，也不是一键“系统优化器”。
-
-## 安装与调用
-
-可以直接从 GitHub 安装：
+## 安装
 
 ```powershell
 npx skills add GantWu03/windows-disk-audit --skill windows-disk-audit
 ```
 
-也可以克隆仓库后从本地安装：
+安装前可以先确认仓库里能识别到这个 Skill。
 
 ```powershell
-npx skills add . --list
+npx skills add GantWu03/windows-disk-audit --list
+```
+
+也可以克隆仓库后从本地安装。
+
+```powershell
+git clone https://github.com/GantWu03/windows-disk-audit.git
+cd windows-disk-audit
 npx skills add . --skill windows-disk-audit
 ```
 
 ## 你可以直接这样说
 
-```text
-用 windows-disk-audit 只读检查我的 C 盘，先查大头，最后输出中文 Markdown 报告。
-```
+- “只读检查我的 C 盘，先找出最大的空间占用。”
+- “解释 Windows、AppData、Docker 和开发缓存为什么这么大。”
+- “不要清理，告诉我每个目录有什么用，处理后会怎样。”
+- “继续检查较小的项目，并补进原来的报告。”
+- “针对报告里的 Playwright 浏览器目录继续深查。”
 
-```text
-检查 Windows Update、Docker、WSL 和 AppData 为什么占这么多，不要清理。
-```
+## 你会得到什么
 
-```text
-继续补查较小文件，并把重要结论合并到同一份 C 盘排查报告。
-```
+报告开头是一张主要空间去向表，随后按真实目录展开。每个值得关注的对象会尽量讲清它的位置、占用口径、用途、产生原因、处理选择、可能影响和未查明之处。
 
-## 设计方式
+下面是报告中的一个简化示例。数字仅用于展示格式，不代表你的电脑。
 
-流程由六步组成：
+| 对象 | 占用与口径 | 它是什么 |
+|---|---|---|
+| Windows Installer | 18.6 GiB，完整逻辑大小 | 已安装软件用于更新、修复和卸载的维护缓存 |
+| 开发工具缓存 | 4.2 GiB，部分扫描下界 | 包管理器和自动化工具下载的可再生文件 |
 
-1. 定义只读范围，取得容量和根一级基线。
-2. 依据故障关联、收益、风险和调查成本形成短名单。
-3. 基线完成后，先按本机实际大头确定完整分工：显著大目录一个子 Agent，多个较小目录按来源或用途合并；每个一级大目录必须分配或列为盲区，再在软件允许范围内并行调查。
-4. 脚本无损合并全部候选；主 Agent只生成概览、修正父子计量、合并真正重复项和裁决真实矛盾。最终正文直接使用子 Agent章节，不再重写或压缩。
-5. 大头解释后，按需要聚合小文件和补查盲区。
-6. 报告开头用表格概述主要空间去向，正文按真实目录解释对象的用途、成因、处理选择和影响；清理另开任务并逐项授权。
+### `%LOCALAPPDATA%\Tool\Cache`
 
-[Windows 检查地图](references/windows-map.md) 说明常见区域，[目录级操作手册](references/directory-procedures.md) 说明进入目录后如何定界、拆分、识别生成者和核验影响。这些内容是可调整的教程。模型可以使用更精确的只读工具、增加调查维度、改变表达方式或继续探索未枚举的线索，只需遵守范围和安全边界。
+这个目录保存工具已经下载过的组件，用来减少以后重复联网。它不包含项目源码。空间紧张时，可以继续核验哪些版本仍被使用。处理缓存后，相关工具可能需要重新下载组件，目录也会随着使用再次增长。
 
-## 目录章节与主 Agent汇总
+一次完整调查通常还会保存这些文件，方便后续 Agent 接着检查。
 
-子 Agent或串行目录簇直接按目录撰写 `chapter.md`，并对负责路径内的事实、依据、处理选择和影响负责；目录内新发现的大头继续由它调查。`scripts/merge_findings.ps1` 无损合并候选。最终正文直接使用这些章节；主 Agent只生成概览、修正父子计量、合并真正重复项和裁决真实矛盾，不做摘要或文风重写。子 Agent承认的盲区和不确定性必须保留，不能在最终报告中升级为确定结论。
+| 文件 | 用途 |
+|---|---|
+| `audit-manifest.json` | 记录允许检查的范围、排除项和只读状态 |
+| `cluster-plan.json` | 记录本机大目录如何分工，哪些地方暂时查不到 |
+| `clusters/*/chapter.md` | 各目录的完整解释章节 |
+| `merged/chapters.raw.md` | 保留各目录原文的合并正文 |
+| `final/findings.json` | 可供后续核验和追问的事实索引 |
+| 最终 Markdown | 给用户阅读的空间概览与目录报告 |
 
-子 Agent先检查本机事实；涉及产品归属、官方维护方法、命令范围、删除影响或易变行为时，优先查找 Microsoft 或产品官方资料。官方资料不可用或未回答问题时，再使用专用工具、可靠一手资料或标明推断。主 Agent只在裁决矛盾时补查。
+## 它会检查哪些地方
 
-## 数据与报告
+- 系统盘根目录里的休眠、分页、交换和未知对象
+- Windows 更新、组件存储、驱动仓库、日志和安装维护数据
+- Program Files、ProgramData、WindowsApps 和已安装程序
+- 用户目录、AppData、浏览器、聊天软件和个人文件
+- 包管理器、IDE、自动化浏览器、构建缓存和 AI 工具数据
+- Docker、WSL、Hyper-V 与其他虚拟磁盘
+- 本机实际出现、但通用清单没有提前列出的其他大目录
 
-- `audit-manifest.json` 保存范围、授权和预算。
-- `cluster-plan.json` 保存基于本机基线、在启动子 Agent前确定的目录簇、负责路径和分组理由。
-- `baseline\` 与 `clusters\` 保存原始只读证据、目录簇候选、覆盖记录和 `chapter.md`。
-- `merged\findings.raw.json` 与 `merged\chapters.raw.md` 分别保存子 Agent候选和目录章节的无损集合。
-- `final\findings.json` 保存无损合并、去重和必要矛盾裁决后的完整候选；若报告包含动作性建议或可回收数字则建立对应 decision index。[轻量记录约定](references/data-contracts.md) 只要求少量安全与来源字段，其余按对象需要选择。
-- 各目录簇 `chapter.md` 是面向用户的原始解释章节。
-- 最终 Markdown 由主 Agent生成的“主要空间去向”概览表和子 Agent原章节构成；正文只允许删除真正重复、修正父子计量和合入真实矛盾裁决。
+大目录会继续向下拆分。较小而且性质相近的目录可以合在一组说明。扫描遇到权限、超时或重解析点时，报告会保留未知范围，不会把它写成 0 B。
 
-`scripts/render_report.ps1` 可以从轻量记录生成可编辑初稿，但不是唯一报告生成方式。`scripts/validate_report.ps1` 检查候选来源闭合、只读状态、范围、动作枚举、危险建议和无依据可回收量等硬门禁，不要求固定章节或与渲染器逐字一致。
+## 使用前提
 
-报告开头用表格列出主要对象或目录、占用口径和它是什么；正文以真实目录为主线。每个有意义的对象自然解释位置、占用、用途、形成原因、可选处理方式、处理影响、依据和不确定性。这些是解释责任，不是固定 schema；只有来源、性质、处理方式和影响相同的对象才能合并。默认不生成行动排行榜，是否处理由用户阅读后决定。
+- [ ] Windows 10 或 Windows 11
+- [ ] PowerShell 5.1 或更高版本，可用 `$PSVersionTable.PSVersion` 查看
+- [ ] 安装时需要 Node.js 与 npx，可用 `node --version` 和 `npx --version` 查看
+- [ ] Agent 能读取你明确允许的目录
+- [ ] 系统盘空间很紧张时，准备一个非系统盘目录保存报告和中间证据
 
-## 只读脚本
+管理员权限并非必需。没有管理员权限时，部分 Windows 目录会保持未知或只得到下界。Skill 不会为了补齐数字取得目录所有权。
+
+没有子 Agent 的客户端也能使用。它会先形成同样的目录计划，再按顺序完成调查，速度可能更慢。
+
+## 可调整的设置
+
+| 设置 | 默认方式 | 什么时候调整 |
+|---|---|---|
+| 检查范围 | Windows 系统盘 | 只想调查某个目录时缩小范围 |
+| 排除范围 | 空 | 不希望读取项目、私人文件或其他目录时添加 |
+| 输出目录 | 用户指定 | 系统盘空间紧张时改到其他盘 |
+| 时间预算 | 用户或 Agent 决定 | 需要更深调查或只想快速定位大头时调整 |
+| 低空间门禁 | 5 GiB 的保守默认值 | 设备需要预留更多空间时提高 |
+| 联网查询 | 按结论需要决定 | 产品行为和官方处理方式需要核实时使用 |
+
+可以用随包提供的脚本创建只读清单。
 
 ```powershell
 $skillRoot = (Resolve-Path -LiteralPath '<Skill 安装目录>').Path
+
 & (Join-Path $skillRoot 'scripts\new_audit_manifest.ps1') `
-  -OutputDirectory E:\StorageAudit `
+  -OutputDirectory 'E:\StorageAudit' `
   -AllowedPaths "$env:SystemDrive\" `
   -TimeBudgetMinutes 60
-$manifestPath = 'E:\StorageAudit\audit-manifest.json'
-
-& (Join-Path $skillRoot 'scripts\collect_inventory.ps1') `
-  -ManifestPath $manifestPath `
-  -Phase baseline `
-  -SecondsPerPath 5
-```
-
-需要生成初稿和检查硬门禁时：
-
-```powershell
-& (Join-Path $skillRoot 'scripts\merge_findings.ps1') `
-  -ClustersDirectory E:\StorageAudit\clusters `
-  -OutputDirectory E:\StorageAudit\merged
-
-& (Join-Path $skillRoot 'scripts\render_report.ps1') `
-  -ManifestPath $manifestPath `
-  -FindingsPath E:\StorageAudit\final\findings.json `
-  -ChaptersPath E:\StorageAudit\merged\chapters.raw.md `
-  -ReportPath E:\StorageAudit\final\报告初稿.md
-
-& (Join-Path $skillRoot 'scripts\validate_report.ps1') `
-  -ManifestPath $manifestPath `
-  -MergedFindingsPath E:\StorageAudit\merged\findings.raw.json `
-  -ReportPath E:\StorageAudit\final\C盘空间排查报告.md `
-  -FindingsPath E:\StorageAudit\final\findings.json
 ```
 
 ## 安全边界
 
-- 不手删 `WinSxS`、`Windows\Installer`、`System32`、驱动仓库或 WindowsApps 内部文件。
-- 不把休眠、分页、交换文件按普通文件处理。
-- 不在更新、安装、数据库、虚拟机或相关应用运行时清理。
-- 不因工作树很旧、日志很大、虚拟磁盘长时间未修改就判断可删。
-- 权限不足只记录为检查缺口，不夺取系统目录所有权。
-- 系统盘进入危险空间区时，不启动新的高写入操作，把报告和临时文件放到其他盘；脚本的 5 GiB 门禁是可调整的保守默认值。
+- 审计和清理分开进行，本轮没有具体授权就不改变系统状态
+- `Cache`、`Temp`、旧日期和大体积只提供调查线索，不能单独证明文件可删
+- `WinSxS`、Windows Installer、驱动仓库和 WindowsApps 不按普通目录手删
+- 数据库、虚拟磁盘、项目、会话、备份和个人文件默认保留
+- 权限不足只记录为检查缺口，不取得系统目录所有权
+- 目录大小、预计可回收量和处理后实际释放的空间分别记录
+- 系统盘进入危险区后停止新的高写入操作，报告改存到其他盘
 
-## 验证
+报告中的建议供用户理解和追问。需要清理、迁移、卸载或修改设置时，应当另开任务，重新核验精确路径和当前活动状态，再由用户逐项确认。
+
+## 它怎样工作
+
+<details>
+<summary>查看调查与合并方式</summary>
+
+Skill 先取得系统盘容量和根一级目录基线，再根据本机真正出现的大头形成完整分工。每个重要目录由一个调查任务负责，目录内发现的新对象也由它继续说明。
+
+各任务直接写出面向用户的目录章节。合并时保留全部候选和原始章节。主 Agent只生成开头概览、修正父子目录重复计量、合并真正相同的对象，并在不同章节互相矛盾时核实裁决。它不会为了缩短报告重新摘要子 Agent正文。
+
+涉及产品归属、命令作用范围或处理影响时，负责该目录的 Agent应优先查看 Microsoft 或产品官方资料。没有足够证据时，结论保持为待调查。
+
+详细方法见 [调查工作流](references/workflow.md)、[Windows 检查地图](references/windows-map.md) 和 [目录级操作手册](references/directory-procedures.md)。结构化记录方式见 [轻量记录约定](references/data-contracts.md)。
+
+</details>
+
+## 常见问题（Troubleshooting）
+
+| 现象 | 常见原因 | 处理办法 |
+|---|---|---|
+| 目录显示 0 B | 权限不足、超时，或把目录自身的 `Length` 当成占用 | 查看覆盖记录，确认扫描是否完整，不要直接判断为空 |
+| 扫描很慢 | 一开始递归了整个系统盘，或单个目录文件过多 | 退回一级目录和短名单，只继续调查排名靠前的大头 |
+| 报告只剩清理建议 | 汇总时压缩了子任务章节 | 使用 `merged/chapters.raw.md` 作为正文，恢复按目录解释 |
+| 缓存清完很快又长回来 | 生成它的应用仍在运行，或没有调整位置和上限 | 查明生成活动，再考虑迁移、限额或应用内设置 |
+| 系统目录无法读取 | 当前会话没有管理员权限，或目录受系统保护 | 保留为未知或下界，不要取得所有权 |
+| 找不到 Skill | 客户端安装目录或发现规则不同 | 先运行 `npx skills add GantWu03/windows-disk-audit --list`，再检查客户端 Skill 目录 |
+
+## 开发与验证
+
+运行单元测试。
 
 ```powershell
 python -m unittest discover -s tests -p "test_*.py"
+```
+
+检查 Skill 包结构。请把 `<meta-skill目录>` 换成 qiaomu-meta-skill 的实际安装位置。
+
+```powershell
 python <meta-skill目录>\scripts\validate_skill.py .
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\validate_report.ps1 `
+```
+
+检查示例报告的安全和完整性门禁。
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass `
+  -File scripts\validate_report.ps1 `
   -ManifestPath evals\fixtures\sample-manifest.json `
   -MergedFindingsPath evals\fixtures\sample-merged-findings.json `
   -ReportPath evals\fixtures\sample-report.md `
   -FindingsPath evals\fixtures\sample-findings.json
-npx skills add . --list
 ```
 
-当前为公开候选版本。内置测试验证结构化合并、范围门禁和报告安全约束；不同客户端、Windows 版本与真实机器环境仍可能表现不同，请保留只读边界并核对报告中的不确定性。
+## 许可证
 
-## Troubleshooting
-
-- 显示 0 B 时先看权限、超时和扫描完整性，不要直接判断为空目录。
-- 扫描太慢时退回一级目录和短名单，减少单次目标，不递归整个系统盘。
-- 报告变成行动摘要时，恢复“概览表 + 真实目录正文”；让每个对象说明用途、成因、选择和影响，不通过删候选或一句建议换取简洁。
-- 缓存很快长回来时，调查生成活动、位置和上限，不重复盲目清空。
-
-## 许可
-
-MIT License  
-Copyright (c) 2026 The windows-disk-audit contributors
+[MIT License](LICENSE)

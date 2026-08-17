@@ -1,10 +1,10 @@
 {
   "name": "windows-disk-audit",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "owner": "Contributors",
   "updated_at": "2026-08-17",
   "status": "public-candidate",
-  "maturity_tier": "governed",
+  "maturity_tier": "beta",
   "lifecycle_stage": "public",
   "context_budget_tier": "production",
   "review_cadence": "quarterly",
