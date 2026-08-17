@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "generated_at": "2026-08-17",
+  "summary": {
+    "total": 18,
+    "passed": 18,
+    "false_positive": 0,
+    "false_negative": 0
+  },
+  "scope": "Windows 系统盘空间调查、目录解释和只读报告；不覆盖内存、云存储或未经授权的清理。"
+}

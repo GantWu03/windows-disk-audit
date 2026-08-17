@@ -1,6 +1,6 @@
 interface:
-  display_name: "Windows 系统盘审计"
-  short_description: "分阶段定位 C 盘占用并生成按目录解释前因后果的只读报告"
+  display_name: "Windows 磁盘空间排查"
+  short_description: "只读查清系统盘空间去向，生成可继续追问的目录报告"
   default_prompt: "使用 $windows-disk-audit 对 Windows 系统盘做默认只读审计。先建立容量基线，再根据本机实际大头一次性规划子 Agent：显著大目录一个 Agent，多个较小目录合并；每个一级大目录必须分配或列为盲区。子 Agent负责既定目录内的新发现和完整章节，涉及产品行为、命令、处理方式或影响时优先查找官方资料，并保留自己声明的盲区。候选无损合并；主 Agent只生成概览、修正父子计量、合并真正重复项和裁决真实矛盾。最终正文直接使用子 Agent章节，不得重新摘要或压缩。未获得具体授权时不执行清理或系统变更。"
   examples:
     - "C 盘快满了，帮我从大到小排查，先不要删除。"
