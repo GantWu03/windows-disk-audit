@@ -4,7 +4,7 @@ description: |
   审计 Windows 系统盘（通常为 C 盘）的空间占用，定位系统文件、Windows 维护数据、程序与安装缓存、用户目录、开发缓存、Docker/WSL/虚拟磁盘及未知对象，并输出“空间去向概览表 + 按真实目录解释用途、成因、处理选择和影响”的中文 Markdown 报告。用于“C盘满了”“查什么占空间”“哪些能清”“为什么又增长”“全盘空间排查”等请求。默认只读；建议仅供用户决策，未获得具体授权时不执行清理、卸载、停服务或系统配置变更。
 metadata:
   author: Contributors
-  version: "0.9.2"
+  version: "0.9.3"
   maturity: beta
 ---
 
