@@ -1,0 +1,97 @@
+{
+  "name": "windows-disk-audit",
+  "version": "0.9.1",
+  "owner": "Contributors",
+  "updated_at": "2026-08-17",
+  "status": "public-candidate",
+  "maturity_tier": "governed",
+  "lifecycle_stage": "public",
+  "context_budget_tier": "production",
+  "review_cadence": "quarterly",
+  "target_platforms": [
+    "openai",
+    "claude",
+    "generic",
+    "agent-skills-compatible"
+  ],
+  "target_os": [
+    "Windows 10",
+    "Windows 11"
+  ],
+  "intent": {
+    "job_to_be_done": "对 Windows 系统盘做默认只读、分阶段、证据约束的空间审计，以概览表和目录章节解释对象的用途、成因、处理选择与影响，由用户自行决定。",
+    "target_users": [
+      "Windows 个人用户",
+      "开发者",
+      "IT 支持与运维人员",
+      "需要复盘空间增长的 Agent 操作者"
+    ],
+    "inputs": [
+      "Windows 系统盘和用户授权范围",
+      "可选的截图、已有扫描结果或异常目录",
+      "报告输出目录、时间预算和排除范围"
+    ],
+    "outputs": [
+      "audit-manifest.json 审计范围和授权清单",
+      "分层 inventory.json 只读盘点",
+      "cluster-plan.json 基于本机基线确定的子 Agent分工",
+      "各目录簇 findings.json、coverage.json 与面向用户的 chapter.md",
+      "merged/findings.raw.json 无损候选集合",
+      "merged/chapters.raw.md 无损目录章节集合",
+      "final/findings.json 无损合并、去重和必要矛盾裁决后的完整候选",
+      "主要空间去向概览表",
+      "直接使用子 Agent章节并仅作去重、父子计量修正和真实矛盾裁决的完整目录正文",
+      "供用户自行选择的处理方式及影响说明"
+    ],
+    "exclusions": [
+      "RAM 或云存储排查",
+      "非 Windows 平台磁盘清理",
+      "未经逐项授权的清理、卸载、停服务或系统配置变更"
+    ]
+  },
+  "defaults": {
+    "language": "zh-CN",
+    "default_mode": "read_only",
+    "parallel_readonly_lanes": "up_to_software_limit",
+    "low_space_write_gate_bytes": 5368709120
+  },
+  "permissions": {
+    "default_mode": "read_only",
+    "report_write": "user-selected directory",
+    "cleanup": "separate itemized authorization required",
+    "privilege_escalation": "forbidden for inventory"
+  },
+  "release_gates": [
+    "prior_art_research",
+    "generalization_review",
+    "trigger_eval",
+    "skill_ir",
+    "read_only_runtime_test",
+    "manifest_scope_enforcement",
+    "non_overwriting_evidence_outputs",
+    "baseline_driven_cluster_plan_before_dispatch",
+    "baseline_major_root_assignment_or_blind_spot",
+    "large_directory_lane_and_small_directory_grouping",
+    "software_limit_parallel_dispatch",
+    "lossless_candidate_merge",
+    "candidate_source_closure",
+    "directory_chapter_explanation",
+    "directory_chapter_semantic_validation",
+    "subagent_owns_in_scope_discovery_and_explanation",
+    "subagent_official_source_priority",
+    "subagent_blind_spot_fidelity",
+    "main_agent_overview_counting_dedup_and_conflict_only",
+    "final_body_directly_uses_subagent_chapters",
+    "space_overview_table",
+    "space_overview_position",
+    "directory_body_explanation",
+    "risk_weighted_evidence",
+    "agent_authored_human_report",
+    "safety_invariant_validation",
+    "directory_procedure_contract",
+    "lightweight_record_validation",
+    "secret_scan",
+    "root_entrypoint_isolation",
+    "public_claim_guard"
+  ]
+}

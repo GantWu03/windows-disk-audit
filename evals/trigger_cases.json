@@ -1,0 +1,139 @@
+{
+  "recommended_threshold": 0.34,
+  "description_required_concepts": [
+    "windows",
+    "storage_audit"
+  ],
+  "positive_concepts": {
+    "windows": [
+      "Windows",
+      "C盘",
+      "C 盘",
+      "系统盘"
+    ],
+    "storage_audit": [
+      "空间排查",
+      "空间审计",
+      "磁盘占用",
+      "查什么占空间",
+      "清理建议",
+      "排查",
+      "检查",
+      "查",
+      "audit",
+      "consuming",
+      "cleaned",
+      "free disk space",
+      "disk usage",
+      "storage audit"
+    ],
+    "targets": [
+      "Windows Update",
+      "Installer",
+      "AppData",
+      "Docker",
+      "WSL",
+      "VHDX",
+      "缓存",
+      "日志",
+      "大文件"
+    ],
+    "report": [
+      "报告",
+      "Markdown",
+      "来源",
+      "删除影响",
+      "怎么产生"
+    ]
+  },
+  "negative_patterns": [
+    "内存占用",
+    "RAM",
+    "云盘空间",
+    "iCloud",
+    "只删除这个文件",
+    "Mac 磁盘",
+    "macOS storage",
+    "Linux 磁盘",
+    "不要做空间排查",
+    "不做全盘检查"
+  ],
+  "should_trigger": [
+    {
+      "text": "C 盘快满了，帮我从占用最大的地方开始排查，先不要删。",
+      "family": "cn_full_readonly_audit"
+    },
+    {
+      "text": "查一下 Windows 系统盘为什么持续变小，最后给我一份 Markdown 报告。",
+      "family": "cn_growth_report"
+    },
+    {
+      "text": "Windows Update、Installer 和 WinSxS 都很大，分别是什么，哪些能安全处理？",
+      "family": "cn_windows_system_targets"
+    },
+    {
+      "text": "检查 AppData 里的缓存、更新包和日志，不要把账号数据删掉。",
+      "family": "cn_appdata_audit"
+    },
+    {
+      "text": "看看 Docker、WSL 和 VHDX 到底占了多少 C 盘，哪些只是可回收缓存。",
+      "family": "cn_virtualization"
+    },
+    {
+      "text": "C 盘根目录有几个不知道来源的大文件夹，按风险和收益帮我识别。",
+      "family": "cn_unknown_root"
+    },
+    {
+      "text": "继续查较小文件，但按目录聚合，不要一上来递归整个 C 盘。",
+      "family": "cn_small_aggregation"
+    },
+    {
+      "text": "Audit my Windows system drive, explain what created the largest items, and produce a cleanup decision report without deleting anything.",
+      "family": "en_windows_audit"
+    },
+    {
+      "text": "What is consuming C: and which items should be cleaned through Windows, an app, migration, or not touched?",
+      "family": "en_action_classification"
+    }
+  ],
+  "should_not_trigger": [
+    {
+      "text": "Chrome 为什么内存占用 8 GB？",
+      "family": "ram_only"
+    },
+    {
+      "text": "帮我清理 iCloud 云盘配额。",
+      "family": "cloud_storage"
+    },
+    {
+      "text": "把我刚生成的 C:\\Temp\\demo.txt 删除。",
+      "family": "single_known_file_delete"
+    },
+    {
+      "text": "我的 Mac 启动盘满了，清理 Homebrew 缓存。",
+      "family": "mac_storage"
+    },
+    {
+      "text": "Linux 服务器 /var/log 占满根分区。",
+      "family": "linux_storage"
+    },
+    {
+      "text": "解释一下 pagefile.sys 是什么，不需要检查磁盘。",
+      "family": "single_explanation"
+    }
+  ],
+  "near_neighbor": [
+    {
+      "text": "只告诉我怎么在 Windows 设置里打开存储感知。",
+      "family": "single_setting_help"
+    },
+    {
+      "text": "评估把一个已知开发缓存迁到其他盘的方案，不做全盘检查。",
+      "family": "single_migration_plan"
+    },
+    {
+      "text": "帮我修复 Docker Desktop 启动失败，磁盘空间充足。",
+      "family": "docker_diagnostic_not_storage"
+    }
+  ]
+}

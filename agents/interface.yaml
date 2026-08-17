@@ -1,0 +1,50 @@
+interface:
+  display_name: "Windows 系统盘审计"
+  short_description: "分阶段定位 C 盘占用并生成按目录解释前因后果的只读报告"
+  default_prompt: "使用 $windows-disk-audit 对 Windows 系统盘做默认只读审计。先建立容量基线，再根据本机实际大头一次性规划子 Agent：显著大目录一个 Agent，多个较小目录合并；每个一级大目录必须分配或列为盲区。子 Agent负责既定目录内的新发现和完整章节，涉及产品行为、命令、处理方式或影响时优先查找官方资料，并保留自己声明的盲区。候选无损合并；主 Agent只生成概览、修正父子计量、合并真正重复项和裁决真实矛盾。最终正文直接使用子 Agent章节，不得重新摘要或压缩。未获得具体授权时不执行清理或系统变更。"
+  examples:
+    - "C 盘快满了，帮我从大到小排查，先不要删除。"
+    - "检查 Windows Update、Docker、WSL 和 AppData 为什么占这么多。"
+    - "把这次系统盘排查持续整理成一份可复盘的 Markdown。"
+    - "哪些 C 盘文件可以清，分别说明来源、影响和建议。"
+compatibility:
+  canonical_format: "agent-skills"
+  adapter_targets:
+    - "openai"
+    - "claude"
+    - "generic"
+    - "agent-skills-compatible"
+  target_os:
+    - "windows-10"
+    - "windows-11"
+  activation:
+    mode: "manual-or-description"
+  execution:
+    context: "progressive"
+    shell: "powershell"
+  trust:
+    source_tier: "public-open-source"
+    remote_inline_execution: "forbid"
+    generated_claims: "evidence-bound"
+  permissions:
+    network: "由 Agent 根据是否能改善结论自主进行只读查询；不执行网络下载的清理脚本"
+    file_read: "用户授权的系统盘和配置目录；不因权限不足取得所有权"
+    file_write: "用户指定的报告目录；清理动作必须另行逐项授权"
+    subprocess: "只读 PowerShell 盘点、Windows/应用官方查询命令；默认禁止停服务和状态变更"
+  degradation:
+    no_admin: "输出部分审计报告并记录权限缺口"
+    no_network: "降低系统或厂商结论置信度，不猜测"
+    no_subagents: "先按本机基线形成目录簇计划，再按该计划串行执行"
+gates:
+  governed:
+    - "默认只读，审计与清理分离"
+    - "低空间写入门禁"
+    - "基线后按本机大头规划完整分工，大目录独立、小目录合并，并可使用软件并行上限"
+    - "子 Agent负责既定目录内的新发现和完整章节，候选无损合并"
+    - "一级大目录均分配或列为盲区，子 Agent优先查找官方资料并保留不确定性"
+    - "主 Agent只生成概览、修正父子计量、去重和裁决真实矛盾；正文直接使用子 Agent章节"
+    - "开头空间去向概览表，正文按真实目录解释用途、成因、选择与影响"
+    - "父子目录、链接、硬链接与虚拟磁盘重复计量检查"
+    - "逐项清理授权与执行前复核"
+    - "操作前后实际可用空间验证"
+    - "证据不足时保留并标记 missing evidence"

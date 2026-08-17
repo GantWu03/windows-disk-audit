@@ -1,0 +1,81 @@
+[
+  {
+    "id": "S-001",
+    "source_refs": ["system:S-001"],
+    "review_status": "confirmed",
+    "path": "C:\\hiberfil.sys",
+    "path_template": "%SystemDrive%\\hiberfil.sys",
+    "role": "focus",
+    "summary": "Windows 为休眠和快速启动保留的系统文件，占用较大但不能按普通文件删除。",
+    "observations": [
+      "文件位于系统盘根目录",
+      "本次只记录逻辑大小，没有执行系统设置变更"
+    ],
+    "logical_bytes": 6442450944,
+    "measurement_status": "complete",
+    "source": "Windows 电源管理",
+    "purpose": "保存休眠所需的内存状态，并可能支持快速启动",
+    "active_use": "unknown",
+    "object_class": "system_managed_file",
+    "protected_class": true,
+    "recommendation": "不要手删。只有确定不需要休眠并接受快速启动可能受影响时，才另行使用 Windows 支持的电源设置评估；若仍在使用这些功能就保留。",
+    "impact": "关闭完整休眠会失去休眠能力，并可能改变快速启动行为；重新启用后 Windows 会重建该文件。",
+    "risk": "high",
+    "recommended_action": "clean_via_system",
+    "decision_basis": ["系统管理文件不能按普通文件删除", "功能取舍需要由用户确认"],
+    "evidence": [
+      {
+        "kind": "official",
+        "locator": "Microsoft powercfg documentation",
+        "supports": "hiberfil.sys 应通过 Windows 电源配置管理，而不是手工删除"
+      }
+    ],
+    "state_changes_performed": [],
+    "actual_result": "not_executed"
+  },
+  {
+    "id": "U-001",
+    "source_refs": ["user-cache:U-001"],
+    "review_status": "corrected",
+    "path": "C:\\Users\\Example\\AppData\\Local\\Tool\\Cache",
+    "path_template": "%LOCALAPPDATA%\\Tool\\Cache",
+    "role": "brief",
+    "summary": "开发工具产生的可再生下载缓存；有一定占用，但频繁清理只会增加后续下载。",
+    "observations": [
+      "只读测量得到约 2.6 GiB 逻辑大小",
+      "目录内容以版本化下载文件为主"
+    ],
+    "logical_bytes": 2791728742,
+    "measurement_status": "complete",
+    "active_use": "no",
+    "object_class": "regenerable_download_cache",
+    "recommendation": "当前空间尚可时保留；急需空间可在退出工具后只处理已确认的下载缓存，不要删除整个工具目录。",
+    "impact": "不会改变已经安装的工具或现有源码；以后缺少组件时会重新下载，因此离线或网络较慢时不值得频繁清。",
+    "risk": "low",
+    "recommended_action": "clean_via_app",
+    "decision_basis": ["内容可重新下载", "当前应用已退出", "频繁清理会增加后续下载成本"],
+    "evidence": [
+      {
+        "kind": "local",
+        "locator": "clusters/user-cache/inventory.json",
+        "supports": "目录内容、逻辑大小和应用退出状态"
+      }
+    ],
+    "state_changes_performed": [],
+    "actual_result": "not_executed"
+  },
+  {
+    "id": "R-001",
+    "source_refs": ["system:R-001"],
+    "review_status": "confirmed_keep",
+    "path": "C:\\Windows\\Installer",
+    "path_template": "%WINDIR%\\Installer",
+    "role": "record",
+    "summary": "Windows Installer 的安装与修复缓存，属于受保护对象，本次只记录不建议手删。",
+    "observations": ["目录存在且占用可见，但逻辑大小不能代表可安全回收量"],
+    "protected_class": true,
+    "recommended_action": "keep",
+    "state_changes_performed": [],
+    "actual_result": "not_executed"
+  }
+]

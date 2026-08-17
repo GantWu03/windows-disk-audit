@@ -1,0 +1,32 @@
+[
+  {
+    "id": "M-0001",
+    "source_refs": ["system:S-001"],
+    "review_status": "pending_review",
+    "path": "C:\\hiberfil.sys",
+    "summary": "系统休眠文件候选。",
+    "observations": ["文件位于系统盘根目录"],
+    "state_changes_performed": [],
+    "actual_result": "not_executed"
+  },
+  {
+    "id": "M-0002",
+    "source_refs": ["user-cache:U-001"],
+    "review_status": "pending_review",
+    "path": "C:\\Users\\Example\\AppData\\Local\\Tool\\Cache",
+    "summary": "开发工具缓存候选。",
+    "observations": ["目录占用较大"],
+    "state_changes_performed": [],
+    "actual_result": "not_executed"
+  },
+  {
+    "id": "M-0003",
+    "source_refs": ["system:R-001"],
+    "review_status": "pending_review",
+    "path": "C:\\Windows\\Installer",
+    "summary": "Windows Installer 缓存候选。",
+    "observations": ["目录存在且占用可见"],
+    "state_changes_performed": [],
+    "actual_result": "not_executed"
+  }
+]
